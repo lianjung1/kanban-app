@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import { UserForm } from "../types/UserForm";
 import { User } from "../types/User";
+import toast from "react-hot-toast";
 
 export const useAuthStore = create((set) => ({
   isAuthenticated: false,
@@ -15,7 +16,9 @@ export const useAuthStore = create((set) => ({
       const response = await axiosInstance.post("/auth/register", user);
       set({ user: response.data.user });
       set({ isAuthenticated: true });
+      toast.success("Account created");
     } catch (error) {
+      toast.error("Error creating account");
       set({ user: null });
       set({ isAuthenticated: false });
     }
@@ -26,7 +29,9 @@ export const useAuthStore = create((set) => ({
       const response = await axiosInstance.post("/auth/login", user);
       set({ user: response.data.user });
       set({ isAuthenticated: true });
+      toast.success("Login successful");
     } catch (error) {
+      toast.error("Invalid credentials");
       set({ user: null });
       set({ isAuthenticated: false });
     }
@@ -37,6 +42,7 @@ export const useAuthStore = create((set) => ({
       await axiosInstance.post("/auth/logout");
       set({ user: null });
       set({ isAuthenticated: false });
+      toast.success("Logout successful");
     } catch (error) {
       set({ user: null });
       set({ isAuthenticated: false });
