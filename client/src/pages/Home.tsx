@@ -17,10 +17,7 @@ const Home = () => {
         </p>
         <div className="flex justify-center gap-4 flex-wrap">
           <Link to="/login">
-            <Button
-              size="lg"
-              className="bg-blue-600 text-white hover:bg-blue-500 focus:outline-none"
-            >
+            <Button size="lg" variant="default">
               Login
             </Button>
           </Link>

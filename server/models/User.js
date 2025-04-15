@@ -16,10 +16,12 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    profilePic: {
-      type: String,
-      default: "",
-    },
+    boards: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Board",
+      },
+    ],
   },
   { timestamps: true }
 );

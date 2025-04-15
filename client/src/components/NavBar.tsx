@@ -61,7 +61,12 @@ const NavBar = () => {
                 </Link>
               </Button>
 
-              <Button variant="default" size="sm" asChild>
+              <Button
+                variant="default"
+                size="sm"
+                className="bg-slate-800 text-white hover:bg-slate-700 focus:outline-none"
+                asChild
+              >
                 <Link to="/signup" className="flex items-center gap-1">
                   <UserPlus className="h-4 w-4" />
                   <span>Sign up</span>

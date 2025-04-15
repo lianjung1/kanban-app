@@ -13,15 +13,21 @@ const taskSchema = new mongoose.Schema(
       required: true,
       trim: true,
       minlength: 1,
+      default: "",
     },
-    status: {
+    priority: {
       type: String,
       required: true,
-      enum: ["pending", "in-progress", "completed"],
-      default: "pending",
+      enum: ["low", "medium", "high", "urgent"],
+      default: "medium",
     },
-    dueDate: {
-      type: Date,
+    assignedTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    columnId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "BoardColumn",
       required: true,
     },
   },

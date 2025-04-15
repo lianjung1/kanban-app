@@ -23,6 +23,8 @@ import { BoardCard } from "@/components/BoardCard";
 import { BoardSelector } from "@/components/BoardSelector";
 import { PlusCircle, KanbanSquare } from "lucide-react";
 import toast from "react-hot-toast";
+import { useAuthStore } from "@/store/useAuthStore";
+import { AuthStore } from "@/types/AuthStore";
 
 // Mock data for the boards
 const MOCK_BOARDS = [
@@ -53,6 +55,8 @@ const MOCK_BOARDS = [
 ];
 
 const Dashboard = () => {
+  const { user } = useAuthStore() as AuthStore;
+
   const [boards, setBoards] = useState(MOCK_BOARDS);
   const [newBoardName, setNewBoardName] = useState("");
   const [newBoardDescription, setNewBoardDescription] = useState("");
@@ -91,7 +95,9 @@ const Dashboard = () => {
         {/* Welcome Section */}
         <div className="mb-10">
           <h1 className="text-3xl font-bold text-sidebar-foreground">
-            Welcome to your Dashboard
+            {user?.fullName
+              ? `Welcome back, ${user.fullName.split(" ")[0]}`
+              : "Welcome to your Dashboard"}
           </h1>
           <p className="text-muted-foreground mt-2">
             Manage your projects and track your progress with Kano
