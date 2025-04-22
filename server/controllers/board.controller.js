@@ -13,6 +13,11 @@ export const getBoards = async (req, res) => {
         populate: {
           path: "tasks",
           model: "BoardTask",
+          populate: {
+            path: "assignee",
+            model: "User",
+            select: "-password",
+          },
         },
       });
     return res.status(200).json(boards);
@@ -91,7 +96,7 @@ export const updateBoard = async (req, res) => {
     const { title, description, shareeEmail } = req.body;
     const boardId = req.params.id;
 
-    const board = await Board.findOne({ _id: boardId });
+    const board = await Board.findById(boardId);
     if (!board) {
       return res.status(404).json({ message: "Board not found" });
     }
@@ -113,16 +118,17 @@ export const updateBoard = async (req, res) => {
       await User.updateOne({ _id: sharee._id }, { $push: { boards: boardId } });
     }
 
-    const newBoard = await Board.findOneAndUpdate(
-      { _id: boardId },
-      {
-        title,
-        description,
-      },
+    const updateData = {};
+    if (title) updateData.title = title;
+    if (description) updateData.description = description;
+
+    const updatedBoard = await Board.findByIdAndUpdate(
+      boardId,
+      { $set: updateData },
       { new: true }
     );
 
-    return res.status(200).json(newBoard);
+    return res.status(200).json(updatedBoard);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

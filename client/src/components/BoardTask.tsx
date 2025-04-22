@@ -36,16 +36,9 @@ import { Label } from "./ui/label";
 interface KanbanTaskProps {
   task: BoardTask;
   columnId: string;
-  onEditTask?: (taskId: string, updatedTask: Partial<BoardTask>) => void;
-  onDeleteTask?: (taskId: string, columnId: string) => void;
 }
 
-export const Task = ({
-  task,
-  columnId,
-  onEditTask,
-  onDeleteTask,
-}: KanbanTaskProps) => {
+export const Task = ({ task, columnId }: KanbanTaskProps) => {
   const { board, updateTask, deleteTask } = useBoardStore() as BoardStore;
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editedTitle, setEditedTitle] = useState(task.title);

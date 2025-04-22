@@ -18,6 +18,9 @@ import { useBoardStore } from "@/store/useBoardStore";
 import { BoardTask } from "@/types/BoardTask";
 import { BoardStore } from "@/types/BoardStore";
 import { countTasksInBoard } from "@/lib/utils";
+import { useAuthStore } from "@/store/useAuthStore";
+import { AuthStore } from "@/types/AuthStore";
+import { all } from "axios";
 
 type TasksModalProps = {
   open: boolean;
@@ -73,6 +76,7 @@ const getPriorityBadge = (priority: BoardTask["priority"]) => {
 
 export const TasksModal = ({ open, onOpenChange }: TasksModalProps) => {
   const { allBoards } = useBoardStore() as BoardStore;
+  const { user } = useAuthStore() as AuthStore;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -107,19 +111,21 @@ export const TasksModal = ({ open, onOpenChange }: TasksModalProps) => {
                   <div className="space-y-2 py-2">
                     {countTasksInBoard(board) > 0 ? (
                       board.columns.flatMap((column) =>
-                        column.tasks.map((task) => (
-                          <div
-                            key={task._id}
-                            className="p-3 rounded-md bg-background/30 border border-border/50 hover:bg-background/50 transition-colors"
-                          >
-                            <div className="flex items-center justify-between">
-                              <h4 className="font-medium text-sm">
-                                {task.title}
-                              </h4>
-                              {getPriorityBadge(task.priority)}
+                        column.tasks.map((task) =>
+                          task.assignee?._id === user?._id ? (
+                            <div
+                              key={task._id}
+                              className="p-3 rounded-md bg-background/30 border border-border/50 hover:bg-background/50 transition-colors"
+                            >
+                              <div className="flex items-center justify-between">
+                                <h4 className="font-medium text-sm">
+                                  {task.title}
+                                </h4>
+                                {getPriorityBadge(task.priority)}
+                              </div>
                             </div>
-                          </div>
-                        ))
+                          ) : null
+                        )
                       )
                     ) : (
                       <div className="text-sm text-muted-foreground">

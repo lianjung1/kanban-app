@@ -106,11 +106,6 @@ const BoardDetail = () => {
   };
 
   const handleSaveBoardSettings = () => {
-    if (!editedBoardName.trim()) {
-      toast.error("Board name cannot be empty");
-      return;
-    }
-
     if (board) {
       updateBoard(
         editedBoardName,
