@@ -10,9 +10,7 @@ const taskSchema = new mongoose.Schema(
     },
     description: {
       type: String,
-      required: true,
       trim: true,
-      minlength: 1,
       default: "",
     },
     priority: {
@@ -21,7 +19,7 @@ const taskSchema = new mongoose.Schema(
       enum: ["low", "medium", "high", "urgent"],
       default: "medium",
     },
-    assignedTo: {
+    assignee: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
@@ -30,10 +28,15 @@ const taskSchema = new mongoose.Schema(
       ref: "BoardColumn",
       required: true,
     },
+    boardId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Board",
+      required: true,
+    },
   },
   { timestamps: true }
 );
 
-const Task = mongoose.model("Task", taskSchema);
+const BoardTask = mongoose.model("BoardTask", taskSchema);
 
-export default Task;
+export default BoardTask;

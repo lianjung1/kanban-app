@@ -70,9 +70,12 @@ const Login = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-white">Email</FormLabel>
+                      <FormLabel className="text-white" htmlFor={field.name}>
+                        Email
+                      </FormLabel>
                       <FormControl>
                         <Input
+                          id={field.name}
                           placeholder="name@example.com"
                           {...field}
                           className="bg-slate-800 border-slate-700 text-white"
@@ -86,10 +89,13 @@ const Login = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-white">Password</FormLabel>
+                      <FormLabel className="text-white" htmlFor={field.name}>
+                        Password
+                      </FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Input
+                            id={field.name}
                             type={showPassword ? "text" : "password"}
                             placeholder="••••••••"
                             {...field}

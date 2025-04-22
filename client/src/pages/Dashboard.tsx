@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Card,
+  CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
@@ -22,68 +23,25 @@ import { Label } from "@/components/ui/label";
 import { BoardCard } from "@/components/BoardCard";
 import { BoardSelector } from "@/components/BoardSelector";
 import { PlusCircle, KanbanSquare } from "lucide-react";
-import toast from "react-hot-toast";
 import { useAuthStore } from "@/store/useAuthStore";
 import { AuthStore } from "@/types/AuthStore";
-
-// Mock data for the boards
-const MOCK_BOARDS = [
-  {
-    id: "1",
-    name: "Product Roadmap",
-    description: "Q2 2025 Product Development Plan",
-    updatedAt: "2025-04-10T10:30:00Z",
-    columns: 4,
-    tasks: 24,
-  },
-  {
-    id: "2",
-    name: "Marketing Campaign",
-    description: "Summer 2025 Marketing Initiative",
-    updatedAt: "2025-04-08T14:20:00Z",
-    columns: 3,
-    tasks: 15,
-  },
-  {
-    id: "3",
-    name: "Development Sprint",
-    description: "Sprint #23 - Backend Refactoring",
-    updatedAt: "2025-04-11T09:15:00Z",
-    columns: 5,
-    tasks: 32,
-  },
-];
+import { BoardStore } from "@/types/BoardStore";
+import { useBoardStore } from "@/store/useBoardStore";
+import { TasksModal } from "@/components/TasksModal";
 
 const Dashboard = () => {
   const { user } = useAuthStore() as AuthStore;
+  const { allBoards, getBoards, createBoard } = useBoardStore() as BoardStore;
 
-  const [boards, setBoards] = useState(MOCK_BOARDS);
+  useEffect(() => {
+    getBoards();
+  }, []);
+
   const [newBoardName, setNewBoardName] = useState("");
   const [newBoardDescription, setNewBoardDescription] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isTasksModalOpen, setIsTasksModalOpen] = useState(false);
   const navigate = useNavigate();
-
-  const handleCreateBoard = () => {
-    if (!newBoardName.trim()) {
-      toast.error("Please enter a board name");
-      return;
-    }
-
-    const newBoard = {
-      id: `board-${Date.now()}`,
-      name: newBoardName,
-      description: newBoardDescription || "No description",
-      updatedAt: new Date().toISOString(),
-      columns: 3,
-      tasks: 0,
-    };
-
-    setBoards([...boards, newBoard]);
-    setNewBoardName("");
-    setNewBoardDescription("");
-    setIsCreateDialogOpen(false);
-    toast.success("Board created successfully!");
-  };
 
   const handleBoardClick = (boardId: string) => {
     navigate(`/board/${boardId}`);
@@ -110,44 +68,64 @@ const Dashboard = () => {
             <h2 className="text-xl font-semibold text-sidebar-foreground">
               Quick Access
             </h2>
-            <BoardSelector />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card className="glass-card bg-sidebar/80 border border-sidebar-border backdrop-blur">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg text-sidebar-foreground">
                   Recent Board
                 </CardTitle>
                 <CardDescription>
-                  {boards[0]?.name || "No recent boards"}
+                  {allBoards[0]?.title || "No recent boards"}
                 </CardDescription>
               </CardHeader>
               <CardFooter>
                 <Button
                   variant="secondary"
                   className="w-full"
-                  onClick={() => boards[0] && handleBoardClick(boards[0].id)}
+                  onClick={() =>
+                    allBoards[0] && handleBoardClick(allBoards[0]._id)
+                  }
                 >
                   Open Board
                 </Button>
               </CardFooter>
             </Card>
 
-            <Card className="glass-card bg-sidebar/80 border border-sidebar-border backdrop-blur">
+            <Card className="glass-card">
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg text-sidebar-foreground">
-                  Task Summary
-                </CardTitle>
+                <CardTitle className="text-lg">Task Summary</CardTitle>
                 <CardDescription>
-                  {boards.reduce((acc, board) => acc + board.tasks, 0)} tasks
-                  across {boards.length} boards
+                  {allBoards.reduce((acc, board) => {
+                    const tasksInBoard = board.columns.reduce(
+                      (colAcc, column) => colAcc + column.tasks?.length,
+                      0
+                    );
+                    return acc + tasksInBoard;
+                  }, 0)}{" "}
+                  tasks across {allBoards.length} boards
                 </CardDescription>
               </CardHeader>
               <CardFooter>
-                <Button variant="secondary" className="w-full">
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  onClick={() => setIsTasksModalOpen(true)}
+                >
                   View All Tasks
                 </Button>
               </CardFooter>
+            </Card>
+
+            {/* Board Selector Section */}
+            <Card className="glass-card h-full">
+              <CardHeader>
+                <CardTitle className="text-lg">Select Board</CardTitle>
+                <CardDescription>Choose a board to work on</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <BoardSelector />
+              </CardContent>
             </Card>
 
             <Card className="glass-card bg-sidebar/80 border border-sidebar-border backdrop-blur">
@@ -191,9 +169,7 @@ const Dashboard = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="description">
-                          Description (optional)
-                        </Label>
+                        <Label htmlFor="description">Description</Label>
                         <Input
                           id="description"
                           placeholder="Enter description"
@@ -206,7 +182,16 @@ const Dashboard = () => {
                       </div>
                     </div>
                     <DialogFooter>
-                      <Button onClick={handleCreateBoard}>Create Board</Button>
+                      <Button
+                        onClick={() => {
+                          createBoard(newBoardName, newBoardDescription);
+                          setIsCreateDialogOpen(false);
+                          setNewBoardName("");
+                          setNewBoardDescription("");
+                        }}
+                      >
+                        Create Board
+                      </Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
@@ -214,6 +199,12 @@ const Dashboard = () => {
             </Card>
           </div>
         </div>
+
+        {/* Tasks Modal */}
+        <TasksModal
+          open={isTasksModalOpen}
+          onOpenChange={setIsTasksModalOpen}
+        />
 
         {/* Your Boards */}
         <div>
@@ -231,13 +222,13 @@ const Dashboard = () => {
             </Button>
           </div>
 
-          {boards.length > 0 ? (
+          {allBoards.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {boards.map((board) => (
+              {allBoards.map((board) => (
                 <BoardCard
-                  key={board.id}
+                  key={board._id}
                   board={board}
-                  onClick={() => handleBoardClick(board.id)}
+                  onClick={() => handleBoardClick(board._id)}
                 />
               ))}
             </div>

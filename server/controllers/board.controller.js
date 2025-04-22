@@ -6,7 +6,7 @@ import BoardTask from "../models/BoardTask.js";
 export const getBoards = async (req, res) => {
   try {
     const userId = req.user._id;
-    const boards = await Board.find({ owner: userId })
+    const boards = await Board.find({ members: { $in: [userId] } })
       .populate("columns")
       .populate({
         path: "columns",
@@ -31,7 +31,20 @@ export const getBoard = async (req, res) => {
         populate: {
           path: "tasks",
           model: "BoardTask",
+          populate: {
+            path: "assignee",
+            model: "User",
+            select: "-password",
+          },
         },
+      })
+      .populate({
+        path: "owner",
+        select: "-password",
+      })
+      .populate({
+        path: "members",
+        select: "-password",
       });
     if (!board) {
       return res.status(404).json({ message: "Board not found" });
@@ -75,7 +88,7 @@ export const createBoard = async (req, res) => {
 
 export const updateBoard = async (req, res) => {
   try {
-    const { title, description } = req.body;
+    const { title, description, shareeEmail } = req.body;
     const boardId = req.params.id;
 
     const board = await Board.findOne({ _id: boardId });
@@ -83,8 +96,25 @@ export const updateBoard = async (req, res) => {
       return res.status(404).json({ message: "Board not found" });
     }
 
+    if (shareeEmail) {
+      const sharee = await User.findOne({ email: shareeEmail });
+      if (!sharee) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (board.members.includes(sharee._id)) {
+        return res.status(400).json({ message: "User already a member" });
+      }
+
+      await Board.updateOne(
+        { _id: boardId },
+        { $push: { members: sharee._id } }
+      );
+      await User.updateOne({ _id: sharee._id }, { $push: { boards: boardId } });
+    }
+
     const newBoard = await Board.findOneAndUpdate(
-      board,
+      { _id: boardId },
       {
         title,
         description,
@@ -109,6 +139,12 @@ export const deleteBoard = async (req, res) => {
     }
 
     await Board.findOneAndDelete({ _id: boardId });
+
+    await User.updateMany({ boards: boardId }, { $pull: { boards: boardId } });
+
+    await BoardColumn.deleteMany({ boardId: boardId });
+
+    await BoardTask.deleteMany({ boardId: boardId });
 
     return res.status(200).json({ message: "Board deleted successfully" });
   } catch (error) {

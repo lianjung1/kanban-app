@@ -1,5 +1,6 @@
 import Board from "../models/Board.js";
 import BoardColumn from "../models/BoardColumn.js";
+import BoardTask from "../models/BoardTask.js";
 
 export const createColumn = async (req, res) => {
   try {
@@ -30,15 +31,14 @@ export const createColumn = async (req, res) => {
 
 export const updateColumn = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { title } = req.body;
+    const { title, columnId } = req.body;
 
     if (!title) {
       return res.status(400).json({ message: "Title is required" });
     }
 
     const column = await BoardColumn.findByIdAndUpdate(
-      id,
+      columnId,
       { title },
       { new: true }
     );
@@ -55,14 +55,43 @@ export const updateColumn = async (req, res) => {
 
 export const deleteColumn = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { columnId } = req.body;
 
-    const column = await BoardColumn.findByIdAndDelete(id);
+    const column = await BoardColumn.findByIdAndDelete(columnId);
     if (!column) {
       return res.status(404).json({ message: "Column not found" });
     }
 
-    res.status(200).json({ message: "Column deleted successfully" });
+    await Board.findOneAndUpdate(
+      { columns: columnId },
+      { $pull: { columns: columnId } }
+    );
+
+    await BoardTask.deleteMany({ _id: { $in: column.tasks } });
+
+    res.status(200).json(column);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const deleteAllTasks = async (req, res) => {
+  try {
+    const columnId = req.params.id;
+
+    const column = await BoardColumn.findById(columnId);
+
+    if (!column) {
+      return res.status(404).json({ message: "Column not found" });
+    }
+
+    await BoardTask.deleteMany({
+      _id: { $in: column.tasks },
+    });
+
+    await BoardColumn.updateOne({ _id: columnId }, { $set: { tasks: [] } });
+
+    res.status(200).json({ message: "All tasks deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
