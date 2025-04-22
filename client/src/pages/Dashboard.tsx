@@ -28,6 +28,7 @@ import { AuthStore } from "@/types/AuthStore";
 import { BoardStore } from "@/types/BoardStore";
 import { useBoardStore } from "@/store/useBoardStore";
 import { TasksModal } from "@/components/TasksModal";
+import { countUserTasksInAllBoards, countUserTasksInBoard } from "@/lib/utils";
 
 const Dashboard = () => {
   const { user } = useAuthStore() as AuthStore;
@@ -96,13 +97,7 @@ const Dashboard = () => {
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg">Task Summary</CardTitle>
                 <CardDescription>
-                  {allBoards.reduce((acc, board) => {
-                    const tasksInBoard = board.columns.reduce(
-                      (colAcc, column) => colAcc + column.tasks?.length,
-                      0
-                    );
-                    return acc + tasksInBoard;
-                  }, 0)}{" "}
+                  {countUserTasksInAllBoards(user?._id as string, allBoards)}{" "}
                   tasks across {allBoards.length} boards
                 </CardDescription>
               </CardHeader>

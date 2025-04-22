@@ -17,7 +17,7 @@ import { KanbanSquare, CheckCircle, Circle, AlertTriangle } from "lucide-react";
 import { useBoardStore } from "@/store/useBoardStore";
 import { BoardTask } from "@/types/BoardTask";
 import { BoardStore } from "@/types/BoardStore";
-import { countTasksInBoard } from "@/lib/utils";
+import { countTasksInBoard, countUserTasksInBoard } from "@/lib/utils";
 import { useAuthStore } from "@/store/useAuthStore";
 import { AuthStore } from "@/types/AuthStore";
 import { all } from "axios";
@@ -103,7 +103,7 @@ export const TasksModal = ({ open, onOpenChange }: TasksModalProps) => {
                   <div className="flex items-center">
                     <span className="font-medium">{board.title}</span>
                     <Badge variant="outline" className="ml-2 bg-background/30">
-                      {countTasksInBoard(board)} tasks
+                      {countUserTasksInBoard(user?._id as string, board)} tasks
                     </Badge>
                   </div>
                 </AccordionTrigger>
