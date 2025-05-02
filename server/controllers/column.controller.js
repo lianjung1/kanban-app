@@ -1,6 +1,7 @@
 import Board from "../models/Board.js";
 import BoardColumn from "../models/BoardColumn.js";
 import BoardTask from "../models/BoardTask.js";
+import Comment from "../models/Comment.js";
 
 export const createColumn = async (req, res) => {
   try {
@@ -69,6 +70,10 @@ export const deleteColumn = async (req, res) => {
 
     await BoardTask.deleteMany({ _id: { $in: column.tasks } });
 
+    await Comment.deleteMany({
+      taskId: { $in: column.tasks },
+    });
+
     res.status(200).json(column);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -90,6 +95,10 @@ export const deleteAllTasks = async (req, res) => {
     });
 
     await BoardColumn.updateOne({ _id: columnId }, { $set: { tasks: [] } });
+
+    await Comment.deleteMany({
+      taskId: { $in: column.tasks },
+    });
 
     res.status(200).json({ message: "All tasks deleted successfully" });
   } catch (error) {

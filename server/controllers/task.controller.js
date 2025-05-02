@@ -2,6 +2,7 @@ import BoardTask from "../models/BoardTask.js";
 import BoardColumn from "../models/BoardColumn.js";
 import User from "../models/User.js";
 import Board from "../models/Board.js";
+import Comment from "../models/Comment.js";
 
 export const createTask = async (req, res) => {
   const { title, description, priority, assignedTo, columnId } = req.body;
@@ -99,6 +100,8 @@ export const deleteTask = async (req, res) => {
       { $pull: { tasks: taskId } },
       { new: true }
     );
+
+    await Comment.deleteMany({ taskId: taskId });
 
     res.status(200).json({ message: "Task deleted successfully" });
   } catch (error) {

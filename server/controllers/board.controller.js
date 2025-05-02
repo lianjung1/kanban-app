@@ -2,6 +2,7 @@ import User from "../models/User.js";
 import Board from "../models/Board.js";
 import BoardColumn from "../models/BoardColumn.js";
 import BoardTask from "../models/BoardTask.js";
+import Comment from "../models/Comment.js";
 
 export const getBoards = async (req, res) => {
   try {
@@ -142,6 +143,16 @@ export const deleteBoard = async (req, res) => {
 
     if (!board) {
       return res.status(404).json({ message: "Board not found" });
+    }
+
+    const tasks = await BoardTask.find({ boardId: boardId });
+
+    if (tasks.length > 0) {
+      await Comment.deleteMany({
+        taskId: { $in: tasks.map((task) => task._id) },
+      });
+
+      await BoardTask.deleteMany({ boardId: boardId });
     }
 
     await Board.findOneAndDelete({ _id: boardId });
