@@ -32,13 +32,21 @@ import { BoardTask } from "@/types/BoardTask";
 import { useBoardStore } from "@/store/useBoardStore";
 import { BoardStore } from "@/types/BoardStore";
 import { Label } from "./ui/label";
+import { set } from "react-hook-form";
 
 interface KanbanTaskProps {
   task: BoardTask;
   columnId: string;
+  setSelectedTask: (task: BoardTask | null) => void;
+  setIsTaskSheetOpen: (isOpen: boolean) => void;
 }
 
-export const Task = ({ task, columnId }: KanbanTaskProps) => {
+export const Task = ({
+  task,
+  columnId,
+  setSelectedTask,
+  setIsTaskSheetOpen,
+}: KanbanTaskProps) => {
   const { board, updateTask, deleteTask } = useBoardStore() as BoardStore;
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editedTitle, setEditedTitle] = useState(task.title);
@@ -117,6 +125,10 @@ export const Task = ({ task, columnId }: KanbanTaskProps) => {
         draggable="true"
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
+        onClick={() => {
+          setSelectedTask(task);
+          setIsTaskSheetOpen(true);
+        }}
       >
         <div className="px-2 py-1.5 flex justify-between items-center border-b border-gray-100">
           <div className="flex items-center gap-2">
@@ -132,8 +144,8 @@ export const Task = ({ task, columnId }: KanbanTaskProps) => {
               <Badge className="text-xs bg-blue-500">{taskAssigneeName}</Badge>
             </div>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
               <Button
                 variant="ghost"
                 size="icon"
@@ -152,7 +164,10 @@ export const Task = ({ task, columnId }: KanbanTaskProps) => {
               <DropdownMenuSeparator className="bg-gray-200" />
               <DropdownMenuItem
                 className="text-black hover:bg-gray-100"
-                onClick={handleEditTask}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEditTask();
+                }}
               >
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Task
@@ -160,7 +175,10 @@ export const Task = ({ task, columnId }: KanbanTaskProps) => {
               <DropdownMenuSeparator className="bg-gray-200" />
               <DropdownMenuItem
                 className="text-red-600 hover:bg-red-50"
-                onClick={handleDeleteTask}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteTask();
+                }}
               >
                 <Trash className="h-4 w-4 mr-2" />
                 Delete Task

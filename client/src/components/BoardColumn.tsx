@@ -32,9 +32,17 @@ interface BoardColumnProps {
     sourceColumnId: string,
     targetColumnId: string
   ) => void;
+  setSelectedTask: (task: BoardTask | null) => void;
+  setIsTaskSheetOpen: (isOpen: boolean) => void;
 }
 
-export const Column = ({ column, onAddTask, onTaskDrop }: BoardColumnProps) => {
+export const Column = ({
+  column,
+  onAddTask,
+  onTaskDrop,
+  setSelectedTask,
+  setIsTaskSheetOpen,
+}: BoardColumnProps) => {
   const { board, deleteColumn, updateColumn, deleteAllTasks } =
     useBoardStore() as BoardStore;
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
@@ -104,7 +112,7 @@ export const Column = ({ column, onAddTask, onTaskDrop }: BoardColumnProps) => {
             {column.tasks?.length}
           </span>
         </div>
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
@@ -153,7 +161,15 @@ export const Column = ({ column, onAddTask, onTaskDrop }: BoardColumnProps) => {
 
       <div className="px-3 py-2 space-y-3 h-[calc(100vh-280px)] overflow-y-auto">
         {column.tasks?.map((task) => {
-          return <Task key={task._id} task={task} columnId={column._id} />;
+          return (
+            <Task
+              key={task._id}
+              task={task}
+              columnId={column._id}
+              setSelectedTask={setSelectedTask}
+              setIsTaskSheetOpen={setIsTaskSheetOpen}
+            />
+          );
         })}
       </div>
 

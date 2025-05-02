@@ -30,6 +30,20 @@ import { BoardTask } from "@/types/BoardTask";
 import { countTasksInBoard } from "@/lib/utils";
 import { Board } from "@/types/Board";
 import { set } from "react-hook-form";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { TaskDiscussion } from "@/components/TaskDiscussion";
 
 const BoardDetail = () => {
   const {
@@ -56,6 +70,8 @@ const BoardDetail = () => {
     board?.description || ""
   );
   const [editedShareeEmail, setEditedShareeEmail] = useState("");
+  const [selectedTask, setSelectedTask] = useState<BoardTask | null>(null);
+  const [isTaskSheetOpen, setIsTaskSheetOpen] = useState(false);
   const navigate = useNavigate();
 
   const boardMembers = board?.members || [];
@@ -114,6 +130,9 @@ const BoardDetail = () => {
         board._id
       );
 
+      setEditedBoardName("");
+      setEditedBoardDescription("");
+      setEditedShareeEmail("");
       setIsBoardSettingsOpen(false);
     }
   };
@@ -141,6 +160,45 @@ const BoardDetail = () => {
             <h1 className="text-3xl font-bold text-foreground">
               {board.title}
             </h1>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1">
+                  Members
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-0">
+                <div className="p-4 border-b">
+                  <h4 className="font-medium">Board Members</h4>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    This board is shared with {board?.members.length} members.
+                  </p>
+                </div>
+                <div className="p-4 max-h-80 overflow-y-auto">
+                  <div className="flex flex-col space-y-3">
+                    {board?.members?.map((member) => (
+                      <div
+                        key={member._id}
+                        className="flex items-center justify-between"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback>
+                              {member?.fullName?.[0]}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="text-sm font-medium">
+                              {member?.fullName}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
 
             <Dialog
               open={isBoardSettingsOpen}
@@ -263,6 +321,8 @@ const BoardDetail = () => {
                   column={column}
                   onAddTask={() => openAddTaskDialog(column._id)}
                   onTaskDrop={handleTaskDrop}
+                  setSelectedTask={setSelectedTask}
+                  setIsTaskSheetOpen={setIsTaskSheetOpen}
                 />
               );
             })}
@@ -362,6 +422,36 @@ const BoardDetail = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <Sheet open={isTaskSheetOpen} onOpenChange={setIsTaskSheetOpen}>
+          <SheetContent className="w-full max-w-lg p-6 space-y-6">
+            <div className="space-y-1">
+              <SheetTitle className="text-xl font-semibold text-foreground">
+                {selectedTask?.title || "Untitled Task"}
+              </SheetTitle>
+              <SheetDescription>
+                Priority:{" "}
+                {selectedTask?.priority
+                  ? selectedTask.priority.charAt(0).toUpperCase() +
+                    selectedTask.priority.slice(1)
+                  : "N/A"}
+              </SheetDescription>
+            </div>
+
+            <div className="space-y-1">
+              <h3 className="text-sm font-medium text-foreground">
+                Description
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {selectedTask?.description || "No description provided."}
+              </p>
+            </div>
+
+            <div className="border-t border-border"></div>
+
+            {selectedTask && <TaskDiscussion taskId={selectedTask._id} />}
+          </SheetContent>
+        </Sheet>
       </main>
     </div>
   );

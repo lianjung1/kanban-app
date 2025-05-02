@@ -7,6 +7,7 @@ import authRoutes from "./routes/auth.route.js";
 import boardRoutes from "./routes/board.route.js";
 import columnRoutes from "./routes/column.route.js";
 import taskRoutes from "./routes/task.route.js";
+import commentRoutes from "./routes/comment.route.js";
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/board", boardRoutes);
 app.use("/api/column", columnRoutes);
 app.use("/api/task", taskRoutes);
+app.use("/api/comment", commentRoutes);
 
 app.listen(PORT, async () => {
   try {
