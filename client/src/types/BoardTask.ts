@@ -6,5 +6,6 @@ export type BoardTask = {
   description: string;
   priority: string;
   columnId: string;
+  boardId: string;
   assignee: User | null;
 };

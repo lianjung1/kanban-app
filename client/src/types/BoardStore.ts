@@ -2,23 +2,25 @@ import { User } from "./User";
 import { Board } from "./Board";
 import { BoardColumn } from "./BoardColumn";
 import { BoardTask } from "./BoardTask";
-import { BrotliOptions } from "zlib";
 
-export type BoardStore = {
+export interface BoardStore {
   allBoards: Board[];
   setBoards: (boards: Board[]) => void;
   board: Board | null;
   setBoard: (board: Board) => void;
   getBoards: () => Promise<void>;
   getBoard: (boardId: string) => Promise<void>;
-  createBoard: (title: string, description: string) => Promise<void>;
+  createBoard: (
+    title: string,
+    description: string
+  ) => Promise<Board | undefined>;
   updateBoard: (
     title: string,
     description: string,
     shareeEmail: string,
     boardId: string
-  ) => Promise<void>;
-  deleteBoard: (boardId: string) => Promise<void>;
+  ) => Promise<Board | undefined>;
+  deleteBoard: (boardId: string) => Promise<{ boardId: string } | undefined>;
   addColumn: (title: string, boardId: string) => Promise<void>;
   deleteColumn: (columnId: string) => Promise<void>;
   deleteAllTasks: (boardId: string, columnId: string) => Promise<void>;
@@ -46,4 +48,4 @@ export type BoardStore = {
     taskId: string
   ) => Promise<void>;
   deleteTask: (boardId: string, taskId: string) => Promise<void>;
-};
+}

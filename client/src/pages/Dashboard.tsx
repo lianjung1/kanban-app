@@ -28,24 +28,70 @@ import { AuthStore } from "@/types/AuthStore";
 import { BoardStore } from "@/types/BoardStore";
 import { useBoardStore } from "@/store/useBoardStore";
 import { TasksModal } from "@/components/TasksModal";
-import { countUserTasksInAllBoards, countUserTasksInBoard } from "@/lib/utils";
+import { countUserTasksInAllBoards } from "@/lib/utils";
+import { useSocket } from "@/contexts/SocketContext";
+import { Board } from "@/types/Board";
 
 const Dashboard = () => {
   const { user } = useAuthStore() as AuthStore;
-  const { allBoards, getBoards, createBoard } = useBoardStore() as BoardStore;
+  const { allBoards, getBoards, createBoard, setBoards } =
+    useBoardStore() as BoardStore;
+  const { socket, emitBoardCreated } = useSocket();
+  const navigate = useNavigate();
 
   useEffect(() => {
     getBoards();
   }, []);
 
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("board-created", () => {
+      getBoards();
+    });
+
+    socket.on("board-updated", () => {
+      getBoards();
+    });
+
+    socket.on("board-deleted", () => {
+      getBoards();
+    });
+
+    return () => {
+      socket.off("board-created");
+      socket.off("board-updated");
+      socket.off("board-deleted");
+    };
+  }, [socket, allBoards, setBoards]);
+
   const [newBoardName, setNewBoardName] = useState("");
   const [newBoardDescription, setNewBoardDescription] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isTasksModalOpen, setIsTasksModalOpen] = useState(false);
-  const navigate = useNavigate();
+  const [isCreatingBoard, setIsCreatingBoard] = useState(false);
 
   const handleBoardClick = (boardId: string) => {
     navigate(`/board/${boardId}`);
+  };
+
+  const handleCreateBoard = async () => {
+    if (isCreatingBoard || !newBoardName.trim()) return;
+    setIsCreatingBoard(true);
+
+    try {
+      await createBoard(newBoardName, newBoardDescription);
+      if (socket) {
+        emitBoardCreated();
+      }
+      setNewBoardName("");
+      setNewBoardDescription("");
+      setIsCreateDialogOpen(false);
+    } catch (err) {
+      console.error("Error creating board:", err);
+    } finally {
+      setIsCreatingBoard(false);
+    }
   };
 
   return (
@@ -178,14 +224,10 @@ const Dashboard = () => {
                     </div>
                     <DialogFooter>
                       <Button
-                        onClick={() => {
-                          createBoard(newBoardName, newBoardDescription);
-                          setIsCreateDialogOpen(false);
-                          setNewBoardName("");
-                          setNewBoardDescription("");
-                        }}
+                        onClick={handleCreateBoard}
+                        disabled={isCreatingBoard}
                       >
-                        Create Board
+                        {isCreatingBoard ? "Creating..." : "Create Board"}
                       </Button>
                     </DialogFooter>
                   </DialogContent>

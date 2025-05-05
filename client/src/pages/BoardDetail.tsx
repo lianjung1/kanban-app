@@ -21,7 +21,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PlusCircle, Settings, ArrowLeft, Save } from "lucide-react";
-import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { useBoardStore } from "@/store/useBoardStore";
 import { BoardStore } from "@/types/BoardStore";
@@ -44,6 +43,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { TaskDiscussion } from "@/components/TaskDiscussion";
+import { useSocket } from "@/contexts/SocketContext";
 
 const BoardDetail = () => {
   const {
@@ -56,6 +56,14 @@ const BoardDetail = () => {
     moveTask,
   } = useBoardStore() as BoardStore;
   const { boardId } = useParams();
+  const {
+    socket,
+    emitBoardDeleted,
+    emitBoardUpdated,
+    emitColumnCreated,
+    emitTaskCreated,
+    emitTaskMoved,
+  } = useSocket();
   const [newColumnName, setNewColumnName] = useState("");
   const [isAddColumnDialogOpen, setIsAddColumnDialogOpen] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState("");
@@ -80,26 +88,70 @@ const BoardDetail = () => {
     if (boardId) {
       getBoard(boardId);
     }
-  }, []);
+  }, [boardId]);
 
-  const handleAddColumn = () => {
+  useEffect(() => {
+    if (!socket || !boardId) return;
+
+    socket.emit("join-board", boardId);
+
+    socket.on("board-updated", () => {
+      getBoard(boardId);
+    });
+
+    socket.on("column-created", (boardId) => {
+      getBoard(boardId);
+    });
+
+    socket.on("board-deleted", (deletedBoardId) => {
+      if (boardId === deletedBoardId) {
+        navigate("/dashboard");
+      }
+    });
+
+    socket.on("task-created", (boardId) => {
+      getBoard(boardId);
+    });
+
+    socket.on("task-moved", (boardId) => {
+      getBoard(boardId);
+    });
+
+    return () => {
+      socket.emit("leave-board", boardId);
+      socket.off("board-updated");
+      socket.off("board-deleted");
+      socket.off("column-created");
+      socket.off("task-created");
+      socket.off("task-moved");
+    };
+  }, [socket, boardId, getBoard]);
+
+  const handleAddColumn = async () => {
     if (boardId && newColumnName.trim()) {
-      addColumn(newColumnName, boardId);
+      await addColumn(newColumnName, boardId);
+
+      if (socket) {
+        emitColumnCreated(boardId);
+      }
     }
 
     setIsAddColumnDialogOpen(false);
   };
 
-  const handleDeleteBoard = () => {
+  const handleDeleteBoard = async () => {
     if (boardId) {
-      deleteBoard(boardId);
+      await deleteBoard(boardId);
+      if (socket) {
+        emitBoardDeleted(boardId);
+      }
       navigate("/dashboard");
     }
   };
 
-  const handleAddTask = () => {
+  const handleAddTask = async () => {
     if (activeColumnId && boardId) {
-      createTask(
+      await createTask(
         newTaskTitle,
         newTaskDescription,
         newTaskPriority,
@@ -107,28 +159,41 @@ const BoardDetail = () => {
         activeColumnId,
         boardId
       );
+
+      if (socket && boardId) {
+        emitTaskCreated(boardId);
+      }
+
       setIsAddTaskDialogOpen(false);
     }
   };
 
-  const handleTaskDrop = (
+  const handleTaskDrop = async (
     taskId: string,
     sourceColumnId: string,
     newColumnId: string
   ) => {
     if (boardId && taskId && newColumnId && sourceColumnId) {
-      moveTask(newColumnId, sourceColumnId, boardId, taskId);
+      await moveTask(newColumnId, sourceColumnId, boardId, taskId);
+
+      if (socket && boardId) {
+        emitTaskMoved(boardId);
+      }
     }
   };
 
-  const handleSaveBoardSettings = () => {
+  const handleSaveBoardSettings = async () => {
     if (board) {
-      updateBoard(
+      const updatedBoard = await updateBoard(
         editedBoardName,
         editedBoardDescription,
         editedShareeEmail,
         board._id
       );
+
+      if (updatedBoard && socket) {
+        emitBoardUpdated();
+      }
 
       setEditedBoardName("");
       setEditedBoardDescription("");

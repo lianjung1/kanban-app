@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, GripVertical, Edit, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import toast from "react-hot-toast";
 import {
   Dialog,
   DialogContent,
@@ -32,7 +31,8 @@ import { BoardTask } from "@/types/BoardTask";
 import { useBoardStore } from "@/store/useBoardStore";
 import { BoardStore } from "@/types/BoardStore";
 import { Label } from "./ui/label";
-import { set } from "react-hook-form";
+import { useSocket } from "@/contexts/SocketContext";
+import { emit } from "process";
 
 interface KanbanTaskProps {
   task: BoardTask;
@@ -47,12 +47,30 @@ export const Task = ({
   setSelectedTask,
   setIsTaskSheetOpen,
 }: KanbanTaskProps) => {
-  const { board, updateTask, deleteTask } = useBoardStore() as BoardStore;
+  const { socket, emitTaskUpdated, emitTaskDeleted } = useSocket();
+  const { board, updateTask, deleteTask, getBoard } =
+    useBoardStore() as BoardStore;
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editedTitle, setEditedTitle] = useState(task.title);
   const [editedDescription, setEditedDescription] = useState(task.description);
   const [editedAssignee, setEditedAssignee] = useState(task.assignee?.fullName);
   const [editedPriority, setEditedPriority] = useState(task.priority);
+
+  useEffect(() => {
+    if (!socket || !board?._id) return;
+
+    socket.on("task-updated", (boardId) => {
+      getBoard(boardId);
+    });
+    socket.on("task-deleted", (boardId) => {
+      getBoard(boardId);
+    });
+
+    return () => {
+      socket.off("task-updated");
+      socket.off("task-deleted");
+    };
+  }, [socket, board?._id, getBoard]);
 
   const getPriorityBadge = (priority: string) => {
     switch (priority) {
@@ -95,9 +113,9 @@ export const Task = ({
     setIsEditDialogOpen(true);
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (task._id && board?._id) {
-      updateTask(
+      await updateTask(
         editedTitle,
         editedDescription,
         editedPriority,
@@ -105,14 +123,22 @@ export const Task = ({
         board._id,
         task._id
       );
+
+      if (socket) {
+        emitTaskUpdated(board._id);
+      }
     }
 
     setIsEditDialogOpen(false);
   };
 
-  const handleDeleteTask = () => {
+  const handleDeleteTask = async () => {
     if (board?._id && task._id) {
-      deleteTask(board._id, task._id);
+      await deleteTask(board._id, task._id);
+
+      if (socket) {
+        emitTaskDeleted(board._id);
+      }
     }
   };
 

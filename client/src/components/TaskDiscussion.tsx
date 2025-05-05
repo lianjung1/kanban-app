@@ -12,12 +12,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useCommentStore } from "@/store/useCommentStore";
+import { useSocket } from "@/contexts/SocketContext";
+import { BoardTask } from "@/types/BoardTask";
+import { useParams } from "react-router-dom";
 
 interface TaskDiscussionProps {
   taskId: string;
 }
 
 export const TaskDiscussion = ({ taskId }: TaskDiscussionProps) => {
+  const { boardId } = useParams();
+  const { socket, emitCommentCreated, emitCommentUpdated, emitCommentDeleted } =
+    useSocket();
   const {
     currentComments,
     getComments,
@@ -32,6 +38,26 @@ export const TaskDiscussion = ({ taskId }: TaskDiscussionProps) => {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (!socket || !taskId) return;
+
+    socket.on("comment-created", (taskId) => {
+      getComments(taskId);
+    });
+    socket.on("comment-updated", (taskId) => {
+      getComments(taskId);
+    });
+    socket.on("comment-deleted", (taskId) => {
+      getComments(taskId);
+    });
+
+    return () => {
+      socket.off("comment-created");
+      socket.off("comment-updated");
+      socket.off("comment-deleted");
+    };
+  }, [socket, currentComments, getComments]);
+
+  useEffect(() => {
     if (bottomRef.current) {
       bottomRef.current.scrollIntoView({ behavior: "smooth" });
     }
@@ -43,8 +69,9 @@ export const TaskDiscussion = ({ taskId }: TaskDiscussionProps) => {
     }
   }, []);
 
-  const handleSubmitComment = (taskId: string, content: string) => {
-    createComment(taskId, content);
+  const handleSubmitComment = async (taskId: string, content: string) => {
+    const comment = await createComment(taskId, content);
+    emitCommentCreated(comment.taskId, boardId as string);
     setNewComment("");
   };
 
@@ -53,17 +80,19 @@ export const TaskDiscussion = ({ taskId }: TaskDiscussionProps) => {
     setEditedContent(currentContent);
   };
 
-  const handleSaveEdit = (commentId: string) => {
+  const handleSaveEdit = async (commentId: string) => {
     if (commentId) {
-      updateComment(commentId, editedContent);
+      const comment = await updateComment(commentId, editedContent);
+      emitCommentUpdated(comment.taskId, boardId as string);
       setEditingCommentId(null);
       setEditedContent("");
     }
   };
 
-  const handleDeleteComment = (commentId: string) => {
+  const handleDeleteComment = async (commentId: string) => {
     if (commentId) {
-      deleteComment(commentId);
+      const comment = await deleteComment(commentId);
+      emitCommentDeleted(comment.taskId, boardId as string);
     }
   };
 

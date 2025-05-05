@@ -38,9 +38,12 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
         title,
         description,
       });
+
       set((state: { allBoards: Board[] }) => ({
         allBoards: [...state.allBoards, response.data],
       }));
+
+      return response.data;
     } catch (error) {
       toast.error("Failed to create board");
     }
@@ -60,20 +63,27 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
       });
 
       const updatedBoard = response.data;
-
       set({ board: updatedBoard });
 
-      await get().getBoard(boardId);
       toast.success("Board updated successfully");
+
+      return updatedBoard;
     } catch (error) {
       toast.error("Failed to update board");
     }
   },
 
   deleteBoard: async (boardId: string) => {
-    await axiosInstance.delete(`/board/${boardId}`);
-
-    toast.success("Board deleted successfully");
+    try {
+      await axiosInstance.delete(`/board/${boardId}`);
+      set((state: { allBoards: Board[] }) => ({
+        allBoards: state.allBoards.filter((board) => board._id !== boardId),
+      }));
+      toast.success("Board deleted successfully");
+      return { boardId };
+    } catch (error) {
+      toast.error("Failed to delete board");
+    }
   },
 
   addColumn: async (title: string, boardId: string) => {

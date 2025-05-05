@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Task } from "@/components/BoardTask";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
@@ -23,6 +23,8 @@ import { BoardColumn } from "@/types/BoardColumn";
 import { BoardTask } from "@/types/BoardTask";
 import { useBoardStore } from "@/store/useBoardStore";
 import { BoardStore } from "@/types/BoardStore";
+import { useSocket } from "@/contexts/SocketContext";
+import { useParams } from "react-router-dom";
 
 interface BoardColumnProps {
   column: BoardColumn;
@@ -43,10 +45,34 @@ export const Column = ({
   setSelectedTask,
   setIsTaskSheetOpen,
 }: BoardColumnProps) => {
-  const { board, deleteColumn, updateColumn, deleteAllTasks } =
+  const { board, deleteColumn, updateColumn, deleteAllTasks, getBoard } =
     useBoardStore() as BoardStore;
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
   const [newColumnName, setNewColumnName] = useState(column.title);
+  const { socket, emitColumnDeleted, emitColumnUpdated, emitColumnClear } =
+    useSocket();
+
+  useEffect(() => {
+    if (!socket || !board?._id) return;
+
+    socket.on("column-updated", (boardId) => {
+      getBoard(boardId);
+    });
+
+    socket.on("column-deleted", (boardId) => {
+      getBoard(boardId);
+    });
+
+    socket.on("column-clear", (boardId) => {
+      getBoard(boardId);
+    });
+
+    return () => {
+      socket.off("column-deleted");
+      socket.off("column-updated");
+      socket.off("column-clear");
+    };
+  }, [socket, board?._id, getBoard]);
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -83,18 +109,30 @@ export const Column = ({
     if (column._id) {
       updateColumn(newColumnName, column._id);
       setIsRenameDialogOpen(false);
+
+      if (socket && board?._id) {
+        emitColumnUpdated(board._id);
+      }
     }
   };
 
   const handleClearTasks = () => {
     if (column._id && board?._id) {
       deleteAllTasks(board._id, column._id);
+
+      if (socket && board._id) {
+        emitColumnClear(board._id);
+      }
     }
   };
 
   const handleDeleteColumn = () => {
     if (column._id && board) {
       deleteColumn(column._id);
+
+      if (socket && board._id) {
+        emitColumnDeleted(board._id);
+      }
     }
   };
 

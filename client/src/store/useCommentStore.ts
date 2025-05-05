@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import { CommentStore } from "@/types/CommentStore";
 import toast from "react-hot-toast";
+import { BoardTask } from "@/types/BoardTask";
 
 export const useCommentStore = create<CommentStore>((set, get) => ({
   currentComments: null,
@@ -14,12 +15,14 @@ export const useCommentStore = create<CommentStore>((set, get) => ({
   },
 
   createComment: async (taskId: string, content: string) => {
-    await axiosInstance.post(`/comment`, {
+    const response = await axiosInstance.post(`/comment`, {
       taskId,
       content,
     });
 
     await get().getComments(taskId);
+
+    return response.data;
   },
 
   updateComment: async (commentId: string, content: string) => {
@@ -29,6 +32,8 @@ export const useCommentStore = create<CommentStore>((set, get) => ({
       });
 
       await get().getComments(response.data.taskId);
+
+      return response.data;
     } catch (error: any) {
       const message =
         error.response?.data?.message || "Failed to update comment";
@@ -40,5 +45,7 @@ export const useCommentStore = create<CommentStore>((set, get) => ({
     const response = await axiosInstance.delete(`/comment/${commentId}`);
 
     await get().getComments(response.data.taskId);
+
+    return response.data;
   },
 }));
