@@ -80,6 +80,8 @@ const BoardDetail = () => {
   const [editedShareeEmail, setEditedShareeEmail] = useState("");
   const [selectedTask, setSelectedTask] = useState<BoardTask | null>(null);
   const [isTaskSheetOpen, setIsTaskSheetOpen] = useState(false);
+  const [isAddingColumn, setIsAddingColumn] = useState(false);
+  const [isAddingTask, setIsAddingTask] = useState(false);
   const navigate = useNavigate();
 
   const boardMembers = board?.members || [];
@@ -129,6 +131,7 @@ const BoardDetail = () => {
 
   const handleAddColumn = async () => {
     if (boardId && newColumnName.trim()) {
+      setIsAddingColumn(true);
       await addColumn(newColumnName, boardId);
 
       if (socket) {
@@ -137,6 +140,7 @@ const BoardDetail = () => {
     }
 
     setIsAddColumnDialogOpen(false);
+    setIsAddingColumn(false);
   };
 
   const handleDeleteBoard = async () => {
@@ -150,6 +154,7 @@ const BoardDetail = () => {
   };
 
   const handleAddTask = async () => {
+    setIsAddingTask(true);
     if (activeColumnId && boardId) {
       await createTask(
         newTaskTitle,
@@ -165,6 +170,7 @@ const BoardDetail = () => {
       }
 
       setIsAddTaskDialogOpen(false);
+      setIsAddingTask(false);
     }
   };
 
@@ -370,7 +376,9 @@ const BoardDetail = () => {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button onClick={handleAddColumn}>Add Column</Button>
+                  <Button onClick={handleAddColumn} disabled={isAddingColumn}>
+                    Add Column
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -483,7 +491,9 @@ const BoardDetail = () => {
               </div>
             </div>
             <DialogFooter>
-              <Button onClick={handleAddTask}>Add Task</Button>
+              <Button onClick={handleAddTask} disabled={isAddingTask}>
+                Add Task
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
