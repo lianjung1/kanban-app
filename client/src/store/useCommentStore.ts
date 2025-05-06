@@ -2,7 +2,6 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import { CommentStore } from "@/types/CommentStore";
 import toast from "react-hot-toast";
-import { BoardTask } from "@/types/BoardTask";
 
 export const useCommentStore = create<CommentStore>((set, get) => ({
   currentComments: null,

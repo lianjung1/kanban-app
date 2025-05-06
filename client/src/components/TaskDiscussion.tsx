@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useCommentStore } from "@/store/useCommentStore";
 import { useSocket } from "@/contexts/SocketContext";
-import { BoardTask } from "@/types/BoardTask";
 import { useParams } from "react-router-dom";
 
 interface TaskDiscussionProps {

@@ -24,11 +24,8 @@ import { PlusCircle, Settings, ArrowLeft, Save } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useBoardStore } from "@/store/useBoardStore";
 import { BoardStore } from "@/types/BoardStore";
-import { BoardColumn } from "@/types/BoardColumn";
 import { BoardTask } from "@/types/BoardTask";
 import { countTasksInBoard } from "@/lib/utils";
-import { Board } from "@/types/Board";
-import { set } from "react-hook-form";
 import {
   Popover,
   PopoverContent,
@@ -39,7 +36,6 @@ import {
   Sheet,
   SheetContent,
   SheetDescription,
-  SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
 import { TaskDiscussion } from "@/components/TaskDiscussion";

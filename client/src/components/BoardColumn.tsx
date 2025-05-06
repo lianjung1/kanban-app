@@ -24,7 +24,6 @@ import { BoardTask } from "@/types/BoardTask";
 import { useBoardStore } from "@/store/useBoardStore";
 import { BoardStore } from "@/types/BoardStore";
 import { useSocket } from "@/contexts/SocketContext";
-import { useParams } from "react-router-dom";
 
 interface BoardColumnProps {
   column: BoardColumn;

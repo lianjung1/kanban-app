@@ -35,17 +35,13 @@ app.use("/api/task", taskRoutes);
 app.use("/api/comment", commentRoutes);
 
 io.on("connection", (socket) => {
-  console.log("A user connected");
-
   // Board operations
   socket.on("join-board", (boardId) => {
     socket.join(boardId);
-    console.log(`User joined board: ${boardId}`);
   });
 
   socket.on("leave-board", (boardId) => {
     socket.leave(boardId);
-    console.log(`User left board: ${boardId}`);
   });
 
   socket.on("board-created", () => {
@@ -106,16 +102,11 @@ io.on("connection", (socket) => {
   socket.on("comment-deleted", (taskId, boardId) => {
     io.to(boardId).emit("comment-deleted", taskId);
   });
-
-  socket.on("disconnect", () => {
-    console.log("User disconnected");
-  });
 });
 
 httpServer.listen(PORT, async () => {
   try {
     await connectDB();
-    console.log(`Server is running on port ${PORT}`);
   } catch (error) {
     console.error("Error connecting to the database:", error);
   }

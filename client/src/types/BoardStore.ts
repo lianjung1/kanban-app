@@ -1,7 +1,4 @@
-import { User } from "./User";
 import { Board } from "./Board";
-import { BoardColumn } from "./BoardColumn";
-import { BoardTask } from "./BoardTask";
 
 export interface BoardStore {
   allBoards: Board[];

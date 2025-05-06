@@ -1,4 +1,3 @@
-import { BoardTask } from "@/types/BoardTask";
 import { createContext, useContext, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
@@ -42,14 +41,6 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const newSocket = io("http://localhost:5001", {
       withCredentials: true,
-    });
-
-    newSocket.on("connect", () => {
-      console.log("Connected to socket server");
-    });
-
-    newSocket.on("disconnect", () => {
-      console.log("Disconnected from socket server");
     });
 
     setSocket(newSocket);

@@ -1,7 +1,6 @@
 import BoardTask from "../models/BoardTask.js";
 import BoardColumn from "../models/BoardColumn.js";
 import User from "../models/User.js";
-import Board from "../models/Board.js";
 import Comment from "../models/Comment.js";
 
 export const createTask = async (req, res) => {

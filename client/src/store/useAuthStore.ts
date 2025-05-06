@@ -1,8 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { axiosInstance } from "../lib/axios";
-import { UserForm } from "../types/UserForm";
-import { User } from "../types/User";
 import toast from "react-hot-toast";
 import { AuthStore } from "../types/AuthStore";
 

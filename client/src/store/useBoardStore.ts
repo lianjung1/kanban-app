@@ -1,9 +1,6 @@
 import { create } from "zustand";
 import { axiosInstance } from "@/lib/axios";
 import { Board } from "@/types/Board";
-import { BoardColumn } from "@/types/BoardColumn";
-import { BoardTask } from "@/types/BoardTask";
-import { User } from "@/types/User";
 import toast from "react-hot-toast";
 import { BoardStore } from "@/types/BoardStore";
 

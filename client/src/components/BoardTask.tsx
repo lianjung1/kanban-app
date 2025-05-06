@@ -32,7 +32,6 @@ import { useBoardStore } from "@/store/useBoardStore";
 import { BoardStore } from "@/types/BoardStore";
 import { Label } from "./ui/label";
 import { useSocket } from "@/contexts/SocketContext";
-import { emit } from "process";
 
 interface KanbanTaskProps {
   task: BoardTask;

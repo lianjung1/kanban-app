@@ -30,7 +30,6 @@ import { useBoardStore } from "@/store/useBoardStore";
 import { TasksModal } from "@/components/TasksModal";
 import { countUserTasksInAllBoards } from "@/lib/utils";
 import { useSocket } from "@/contexts/SocketContext";
-import { Board } from "@/types/Board";
 
 const Dashboard = () => {
   const { user } = useAuthStore() as AuthStore;
