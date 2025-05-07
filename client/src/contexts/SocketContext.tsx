@@ -43,8 +43,25 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       import.meta.env.VITE_API_URL || "http://localhost:5001",
       {
         withCredentials: true,
+        transports: ["websocket", "polling"],
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        timeout: 20000,
       }
     );
+
+    newSocket.on("connect", () => {
+      console.log("Socket connected");
+    });
+
+    newSocket.on("connect_error", (error) => {
+      console.error("Socket connection error:", error);
+    });
+
+    newSocket.on("disconnect", (reason) => {
+      console.log("Socket disconnected:", reason);
+    });
 
     setSocket(newSocket);
 

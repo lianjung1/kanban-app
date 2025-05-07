@@ -18,12 +18,16 @@ const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
 const app = express();
 const httpServer = createServer(app);
+
 const io = new Server(httpServer, {
   cors: {
     origin: [CLIENT_URL, "http://localhost:5173"],
     methods: ["GET", "POST", "PATCH", "DELETE"],
     credentials: true,
   },
+  transports: ["websocket", "polling"],
+  pingTimeout: 60000,
+  pingInterval: 25000,
 });
 
 app.use(
