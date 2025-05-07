@@ -28,6 +28,7 @@ const io = new Server(httpServer, {
   transports: ["websocket", "polling"],
   pingTimeout: 60000,
   pingInterval: 25000,
+  path: "/socket.io/",
 });
 
 app.use(

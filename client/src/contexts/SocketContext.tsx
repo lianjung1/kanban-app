@@ -39,17 +39,19 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    const newSocket = io(
-      import.meta.env.VITE_API_URL || "http://localhost:5001",
-      {
-        withCredentials: true,
-        transports: ["websocket", "polling"],
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000,
-        timeout: 20000,
-      }
-    );
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
+    console.log("Connecting to Socket.IO server at:", API_URL);
+
+    const newSocket = io(API_URL, {
+      withCredentials: true,
+      transports: ["websocket", "polling"],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      timeout: 20000,
+      path: "/socket.io/",
+      autoConnect: true,
+    });
 
     newSocket.on("connect", () => {
       console.log("Socket connected");
@@ -60,12 +62,21 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     newSocket.on("disconnect", (reason) => {
-      console.log("Socket disconnected:", reason);
+      console.log("Socket disconnected. Reason:", reason);
+      if (reason === "io server disconnect") {
+        // Server initiated disconnect, try to reconnect
+        newSocket.connect();
+      }
+    });
+
+    newSocket.on("error", (error) => {
+      console.error("Socket error:", error);
     });
 
     setSocket(newSocket);
 
     return () => {
+      console.log("Cleaning up socket connection");
       newSocket.close();
     };
   }, []);
