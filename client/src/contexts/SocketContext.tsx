@@ -39,9 +39,12 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    const newSocket = io("http://localhost:5001", {
-      withCredentials: true,
-    });
+    const newSocket = io(
+      import.meta.env.VITE_API_URL || "http://localhost:5001",
+      {
+        withCredentials: true,
+      }
+    );
 
     setSocket(newSocket);
 
