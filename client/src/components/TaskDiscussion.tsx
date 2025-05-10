@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { MessageSquare, Edit, Trash2, Pencil } from "lucide-react";
 import {
   DropdownMenu,
