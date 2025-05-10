@@ -14,6 +14,7 @@ import {
 import { useCommentStore } from "@/store/useCommentStore";
 import { useSocket } from "@/contexts/SocketContext";
 import { useParams } from "react-router-dom";
+import { Textarea } from "./ui/textarea";
 
 interface TaskDiscussionProps {
   taskId: string;
@@ -101,7 +102,7 @@ export const TaskDiscussion = ({ taskId }: TaskDiscussionProps) => {
   };
 
   return (
-    <Card className="w-full max-w-2xl">
+    <Card className="w-full max-w-2xl overflow-y-auto">
       <CardHeader>
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <MessageSquare className="h-4 w-4" />
@@ -170,11 +171,11 @@ export const TaskDiscussion = ({ taskId }: TaskDiscussionProps) => {
                   </div>
                   {editingCommentId === comment._id ? (
                     <div className="mt-2 flex gap-2">
-                      <Input
+                      <Textarea
                         id={`edit-comment-${comment._id}`}
                         value={editedContent}
                         onChange={(e) => setEditedContent(e.target.value)}
-                        className="flex-1"
+                        className="flex-1 min-h-[60px] text-sm p-3 resize-none"
                       />
                       <Button
                         size="sm"
@@ -191,7 +192,9 @@ export const TaskDiscussion = ({ taskId }: TaskDiscussionProps) => {
                       </Button>
                     </div>
                   ) : (
-                    <p className="text-sm mt-1">{comment.content}</p>
+                    <p className="text-sm mt-1 whitespace-pre-wrap">
+                      {comment.content}
+                    </p>
                   )}
                 </div>
                 <div ref={bottomRef} />
@@ -205,12 +208,12 @@ export const TaskDiscussion = ({ taskId }: TaskDiscussionProps) => {
           }}
           className="mt-4 flex gap-2"
         >
-          <Input
+          <Textarea
             id="new-comment"
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="Write a comment..."
-            className="flex-1"
+            className="flex-1 min-h-[30px] text-sm resize-none"
           />
           <Button type="submit" size="sm">
             Send
