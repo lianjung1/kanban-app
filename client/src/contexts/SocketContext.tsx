@@ -47,17 +47,43 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       withCredentials: true,
       transports: ["websocket", "polling"],
       reconnection: true,
-      reconnectionAttempts: 5,
+      reconnectionAttempts: Infinity,
       reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
       timeout: 20000,
       path: "/socket.io/",
       autoConnect: true,
+      forceNew: true,
+      extraHeaders: {
+        "Access-Control-Allow-Origin": "*",
+      },
+    });
+
+    newSocket.on("connect", () => {
+      console.log("Socket connected");
+    });
+
+    newSocket.on("connect_error", (error) => {
+      console.error("Socket connection error:", error);
+      // Try to reconnect with polling if websocket fails
+      if (newSocket.io.opts.transports?.[0] === "websocket") {
+        newSocket.io.opts.transports = ["polling", "websocket"];
+      }
+    });
+
+    newSocket.on("disconnect", (reason) => {
+      console.log("Socket disconnected:", reason);
+      if (reason === "io server disconnect") {
+        newSocket.connect();
+      }
     });
 
     setSocket(newSocket);
 
     return () => {
-      newSocket.close();
+      if (newSocket) {
+        newSocket.close();
+      }
     };
   }, []);
 

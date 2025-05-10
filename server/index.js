@@ -19,34 +19,42 @@ const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 const app = express();
 const httpServer = createServer(app);
 
+const corsOptions = {
+  origin: [CLIENT_URL, "http://localhost:5173"],
+  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "Accept",
+  ],
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+
 const io = new Server(httpServer, {
-  cors: {
-    origin: [CLIENT_URL, "http://localhost:5173"],
-    methods: ["GET", "POST", "PATCH", "DELETE"],
-    credentials: true,
-  },
+  cors: corsOptions,
   transports: ["websocket", "polling"],
   pingTimeout: 60000,
   pingInterval: 25000,
   path: "/socket.io/",
 });
 
-app.use(
-  cors({
-    origin: [CLIENT_URL, "http://localhost:5173"],
-    methods: ["GET", "POST", "PATCH", "DELETE"],
-    credentials: true,
-  })
-);
+// Middleware
 app.use(express.json());
 app.use(cookieParser());
 
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/board", boardRoutes);
 app.use("/api/column", columnRoutes);
 app.use("/api/task", taskRoutes);
 app.use("/api/comment", commentRoutes);
 
+// Socket.IO connection handling
 io.on("connection", (socket) => {
   // Board operations
   socket.on("join-board", (boardId) => {

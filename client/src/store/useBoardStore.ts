@@ -16,7 +16,7 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
       const response = await axiosInstance.get(`/board`);
       set({ allBoards: response.data });
     } catch (error) {
-      toast.error("Failed to fetch boards");
+      console.log(error);
     }
   },
 
